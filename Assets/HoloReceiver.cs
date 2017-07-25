@@ -274,61 +274,59 @@ public class HoloReceiver : MonoBehaviour
             //set meter position relative to Hololens
             Quaternion re_m_rot = Quaternion.Inverse(m_rot);
             Vector3 mid_pos = this.rotateAroundAxis(m_pos_raw, new Vector3(0, 0, 0), re_m_rot);
-            //Vector3 m_final_pos = new Vector3(mid_pos.x, mid_pos.z, -mid_pos.y);
-            //Transform localToCamera = Camera.main.transform.Find("TrackerLocalToCamera");
-            //localToCamera.localPosition = m_final_pos + stablePosCalib;
-            //meter_position = localToCamera.position;
-            
+            Vector3 m_final_pos = new Vector3(mid_pos.x, mid_pos.z, -mid_pos.y);
+            Transform localToCamera = Camera.main.transform.Find("TrackerLocalToCamera");
+            localToCamera.localPosition = m_final_pos + stablePosCalib;
+            meter_position = localToCamera.position;
+
 
             if (calib_confirmed)
             {
-                Vector3 m_final_pos = new Vector3(mid_pos.x, mid_pos.z, -mid_pos.y);
-                Transform localToCamera = Camera.main.transform.Find("TrackerLocalToCamera");
-                localToCamera.localPosition = m_final_pos + stablePosCalib;
-                //smooth the drift amount by specified number
-                Vector3 counter_drift_amount = localToCamera.position - meter_position;
-                if (first_tracking)
-                {
-                    previous_drift_amount = counter_drift_amount;
-                    counter_drift_total += counter_drift_amount;
-                    drift_accum_curr++;
-                    first_tracking = false;
-                }
-                else
-                {
-                    if (Math.Abs((counter_drift_amount-previous_drift_amount).magnitude) <= 0.05f)
-                    {
-                        //Adding a threshold to the difference two continuous data;
-                        drift_accum_curr++;
-                        previous_drift_amount = counter_drift_amount;
-                        counter_drift_total += counter_drift_amount;
-                    }
-                }
-                
-               
-                
-                if (drift_accum_curr >= 30)
-                {
-                    Vector3 counter_drift_avg = counter_drift_total / 30;
-                    meter_position = meter_position + counter_drift_avg;
-                    GameObject.Find("ViveMeter").transform.position = meter_position;
-                    drift_accum_curr = 0;
-                    counter_drift_total = new Vector3(0, 0, 0);
-                }
+                //Vector3 m_final_pos = new Vector3(mid_pos.x, mid_pos.z, -mid_pos.y);
+                //Transform localToCamera = Camera.main.transform.Find("TrackerLocalToCamera");
+                //localToCamera.localPosition = m_final_pos + stablePosCalib;
+                ////smooth the drift amount by specified number
+                //Vector3 counter_drift_amount = localToCamera.position - meter_position;
+                //if (first_tracking)
+                //{
+                //    previous_drift_amount = counter_drift_amount;
+                //    counter_drift_total += counter_drift_amount;
+                //    drift_accum_curr++;
+                //    first_tracking = false;
+                //}
+                //else
+                //{
+                //    if (Math.Abs((counter_drift_amount-previous_drift_amount).magnitude) <= 0.05f)
+                //    {
+                //        //Adding a threshold to the difference two continuous data;
+                //        drift_accum_curr++;
+                //        previous_drift_amount = counter_drift_amount;
+                //        counter_drift_total += counter_drift_amount;
+                //    }
+                //}
+                             
+                //if (drift_accum_curr >= 30)
+                //{
+                //    Vector3 counter_drift_avg = counter_drift_total / 30;
+                //    meter_position = meter_position + counter_drift_avg;
+                //    GameObject.Find("ViveMeter").transform.position = meter_position;
+                //    drift_accum_curr = 0;
+                //    counter_drift_total = new Vector3(0, 0, 0);
+                //}
 
                 storedTable.transform.localPosition = storedTablePos;
                 storedTable.transform.localRotation = storedTableRot;
                 GameObject.Find("Origin").transform.rotation = storedTable.transform.rotation;
                 GameObject.Find("Origin").transform.position = storedTable.transform.position;
             }
-            else
-            {
-                Vector3 m_final_pos = new Vector3(mid_pos.x, mid_pos.z, -mid_pos.y);
-                Transform localToCamera = Camera.main.transform.Find("TrackerLocalToCamera");
-                localToCamera.localPosition = m_final_pos + stablePosCalib;
-                meter_position = localToCamera.position;
-                GameObject.Find("ViveMeter").transform.position = meter_position;
-            }
+            //else
+            //{
+            //    Vector3 m_final_pos = new Vector3(mid_pos.x, mid_pos.z, -mid_pos.y);
+            //    Transform localToCamera = Camera.main.transform.Find("TrackerLocalToCamera");
+            //    localToCamera.localPosition = m_final_pos + stablePosCalib;
+            //    meter_position = localToCamera.position;
+            //    GameObject.Find("ViveMeter").transform.position = meter_position;
+            //}
 
             //set tracker position
             mid_pos = this.rotateAroundAxis(t_pos_raw, new Vector3(0, 0, 0), re_m_rot);
