@@ -307,14 +307,6 @@ public class HoloReceiver : MonoBehaviour
 
 			UpdateViveHoloTracker ();
 
-			Vector3 HoloToTrackerDisplacement = new Vector3 (0, 0.1f, 0.02f);
-			//LEFT-handed Unity reference system
-			Transform HoloCameraT = Camera.main.transform;
-			Transform ViveHoloTrackerT = ViveHoloTracker.transform;
-			Vector3 ViveTrackerFromHoloPos = HoloCameraT.position + HoloCameraT.TransformVector (HoloToTrackerDisplacement);
-			Vector3 ViveToHololensTranslation = ViveTrackerFromHoloPos - ViveHoloTrackerT.position;
-			Quaternion ViveToHololensRotation = Quaternion.Inverse (HoloCameraT.rotation) * ViveHoloTrackerT.rotation;
-
 
 			//CalibrateViveWithHololens();
 
@@ -434,14 +426,33 @@ public class HoloReceiver : MonoBehaviour
 
 	void CalibrateViveWithHololens()
 	{
+		Vector3 HoloToTrackerDisplacement = new Vector3 (0, 0.08f, 0.04f);
+		//LEFT-handed Unity reference system
+		Transform HoloCameraT = Camera.main.transform;
+		Transform ViveHoloTrackerT = ViveHoloTracker.transform;
+		Vector3 ViveTrackerFromHoloPos = HoloCameraT.position + HoloCameraT.TransformVector (HoloToTrackerDisplacement);
+		Vector3 ViveToHololensTranslation = ViveTrackerFromHoloPos - ViveHoloTrackerT.position;
+		Quaternion ViveTrackersRotation = ViveHoloTracker.transform.rotation * Quaternion.Inverse(ViveCASTTracker.transform.rotation);;
+		Quaternion ViveToHololensRotation = Quaternion.Euler(0, Quaternion.Inverse(ViveTrackersRotation * Quaternion.Inverse (HoloCameraT.rotation)).eulerAngles.y,0);
+
 		//LEFT-handed (converted from RIGHT-handed when receiving data)
 		TrackerTransform TrackerHoloT = Instance.lastTrackerTransform_0;
 		//Vector3 EmitterFromVivePos = ViveHoloTracker.transform.position + ViveHoloTracker.transform.TransformVector (-TrackerHoloT.position);
 		//Quaternion EmitterFromViveRot = ViveHoloTracker.transform.rotation * Quaternion.Inverse (TrackerHoloT.rotation);
 		Vector3 OriginFromVivePos = ViveCASTTracker.transform.position - ViveHoloTracker.transform.position;
+		Vector3 OriginFromHoloPos = ViveCASTTracker.transform.position - ViveTrackerFromHoloPos;
 		Quaternion OriginFromViveRot = ViveCASTTracker.transform.rotation * Quaternion.Inverse (ViveHoloTracker.transform.rotation);
-		ViveCASTTrackerDebug.transform.position = Camera.main.transform.TransformVector (-OriginFromVivePos);
-		ViveCASTTrackerDebug.transform.rotation = ViveCASTTracker.transform.rotation * Camera.main.transform.rotation * Quaternion.Inverse(OriginFromViveRot);
+		//ViveCASTTrackerDebug.transform.position = ViveTrackerFromHoloPos +  Camera.main.transform.TransformVector (OriginFromVivePos);
+
+		Quaternion FinalCASTOriginRot = ViveToHololensRotation;
+		Vector3 FinalCASTOriginPos = ViveTrackerFromHoloPos + ViveToHololensRotation * (ViveCASTTracker.transform.position - ViveHoloTrackerT.position);
+		ViveCASTTrackerDebug.transform.rotation = FinalCASTOriginRot;// HoloCameraT.rotation;// ViveToHololensRotation;
+		ViveCASTTrackerDebug.transform.position = FinalCASTOriginPos;
+			//ViveCASTTracker.transform.position + OriginFromVivePos - OriginFromHoloPos;
+		
+		CASTOrigin.transform.rotation = FinalCASTOriginRot;
+		CASTOrigin.transform.position = FinalCASTOriginPos - ViveToHololensRotation * ViveCASTTracker.transform.position;
+		//ViveCASTTrackerDebug.transform.rotation = ViveCASTTracker.transform.rotation * Camera.main.transform.rotation * Quaternion.Inverse(OriginFromViveRot);
 	}
 
 	public void CalibrateViveEmitter()
